@@ -44,10 +44,14 @@ class Group
     #[ORM\OneToMany(mappedBy: 'relatedGroup', targetEntity: Thread::class)]
     private Collection $threads;
 
+    #[ORM\OneToMany(mappedBy: 'targetGroup', targetEntity: GroupRequest::class)]
+    private Collection $groupRequests;
+
     public function __construct()
     {
         $this->members = new ArrayCollection();
         $this->threads = new ArrayCollection();
+        $this->groupRequests = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -175,6 +179,36 @@ class Group
             // set the owning side to null (unless already changed)
             if ($thread->getRelatedGroup() === $this) {
                 $thread->setRelatedGroup(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, GroupRequest>
+     */
+    public function getGroupRequests(): Collection
+    {
+        return $this->groupRequests;
+    }
+
+    public function addGroupRequest(GroupRequest $groupRequest): self
+    {
+        if (!$this->groupRequests->contains($groupRequest)) {
+            $this->groupRequests->add($groupRequest);
+            $groupRequest->setTargetGroup($this);
+        }
+
+        return $this;
+    }
+
+    public function removeGroupRequest(GroupRequest $groupRequest): self
+    {
+        if ($this->groupRequests->removeElement($groupRequest)) {
+            // set the owning side to null (unless already changed)
+            if ($groupRequest->getTargetGroup() === $this) {
+                $groupRequest->setTargetGroup(null);
             }
         }
 
