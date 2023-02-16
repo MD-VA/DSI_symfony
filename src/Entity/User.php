@@ -44,10 +44,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToMany(targetEntity: Group::class, mappedBy: 'members')]
     private Collection $subscribedGroups;
 
+    #[ORM\OneToMany(mappedBy: 'owner', targetEntity: Thread::class)]
+    private Collection $threads;
+
     public function __construct()
     {
         $this->ownedGroups = new ArrayCollection();
         $this->subscribedGroups = new ArrayCollection();
+        $this->threads = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -208,6 +212,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->subscribedGroups->removeElement($subscribedGroup)) {
             $subscribedGroup->removeMember($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Thread>
+     */
+    public function getThreads(): Collection
+    {
+        return $this->threads;
+    }
+
+    public function addThread(Thread $thread): self
+    {
+        if (!$this->threads->contains($thread)) {
+            $this->threads->add($thread);
+            $thread->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeThread(Thread $thread): self
+    {
+        if ($this->threads->removeElement($thread)) {
+            // set the owning side to null (unless already changed)
+            if ($thread->getOwner() === $this) {
+                $thread->setOwner(null);
+            }
         }
 
         return $this;

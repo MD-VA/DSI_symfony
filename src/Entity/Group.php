@@ -41,9 +41,13 @@ class Group
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'subscribedGroups')]
     private Collection $members;
 
+    #[ORM\OneToMany(mappedBy: 'relatedGroup', targetEntity: Thread::class)]
+    private Collection $threads;
+
     public function __construct()
     {
         $this->members = new ArrayCollection();
+        $this->threads = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -143,6 +147,36 @@ class Group
     public function removeMember(User $member): self
     {
         $this->members->removeElement($member);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Thread>
+     */
+    public function getThreads(): Collection
+    {
+        return $this->threads;
+    }
+
+    public function addThread(Thread $thread): self
+    {
+        if (!$this->threads->contains($thread)) {
+            $this->threads->add($thread);
+            $thread->setRelatedGroup($this);
+        }
+
+        return $this;
+    }
+
+    public function removeThread(Thread $thread): self
+    {
+        if ($this->threads->removeElement($thread)) {
+            // set the owning side to null (unless already changed)
+            if ($thread->getRelatedGroup() === $this) {
+                $thread->setRelatedGroup(null);
+            }
+        }
 
         return $this;
     }
