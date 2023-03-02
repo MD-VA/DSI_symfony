@@ -53,7 +53,7 @@ class Group
     private ?User $owner = null;
 
     #[ORM\Column]
-    private ?bool $isDeleted = null;
+    private ?bool $isDeleted = false;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -72,6 +72,7 @@ class Group
         $this->members = new ArrayCollection();
         $this->threads = new ArrayCollection();
         $this->groupRequests = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
