@@ -3,15 +3,31 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use App\Repository\GroupRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: GroupRepository::class)]
 #[ORM\Table(name: '`group`')]
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new GetCollection(),
+        new Get(),
+        new Post(),
+        new Patch(),
+        new Delete(),
+    ],
+    normalizationContext: ['groups' => ['group:read']],
+    denormalizationContext: ['groups' => ['group:write']],
+)]
 class Group
 {
     #[ORM\Id]
@@ -20,16 +36,20 @@ class Group
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['group:write', 'group:read'])]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['group:write', 'group:read'])]
     private ?string $description = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['group:write', 'group:read'])]
     private ?string $picture = null;
 
     #[ORM\ManyToOne(inversedBy: 'ownedGroups')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['group:read'])]
     private ?User $owner = null;
 
     #[ORM\Column]
