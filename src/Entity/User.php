@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
 use App\Repository\UserRepository;
 use App\State\UserPasswordHasher;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -17,6 +16,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
+use App\Controller\SelfInfoController;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiResource(
@@ -26,6 +26,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Get(),
         new Patch(processor: UserPasswordHasher::class),
         new Delete(),
+        new Get(
+            uriTemplate: '/users/{id}/info',
+            name: 'self_info',
+            controller: SelfInfoController::class,
+            normalizationContext: ['groups' => ['user:nickname']],
+            security: "is_granted('ROLE_USER')"
+        )
     ],
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:create', 'user:update']],
@@ -55,7 +62,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(length: 20)]
-    #[Groups(['user:read', 'user:create', 'user:update'])]
+    #[Groups(['user:read', 'user:create', 'user:update', 'user:nickname'])]
     private ?string $nickname = null;
 
     #[ORM\Column]
